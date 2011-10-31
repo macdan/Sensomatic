@@ -12,7 +12,7 @@
     <table>
     {% for zone in zones %}
     	<tr>
-    		<td>{{ zone }}</td>
+    		<td><a href="/zones/{{zone}}">{{zone}}</a></td>
     		<td><form action="/zones" method="post">
     			<input type="hidden" name="zone_id" value="{{ zone }}"/>
     			<input type="submit" name="submit" value="Remove Zone"/>

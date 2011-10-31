@@ -24,8 +24,9 @@ loop(Req, DocRoot) ->
     "/" ++ Path = Req:get(path),
     try
     	DispatchResult = sensomatic_web_dispatcher:dispatch( Req, [
-			{ "^zones/?", { sensomatic_web_controller, zones } },
-			{ "^devices/?", { sensomatic_web_controller, devices } }
+			{ "^zones/?$", { sensomatic_web_controller, zones } },
+			{ "^zones/(.+?)/?$", { sensomatic_web_controller, zone } },
+			{ "^devices/?$", { sensomatic_web_controller, devices } }
 		] ),
 		case DispatchResult of
 			none -> serve_file( Req, DocRoot );

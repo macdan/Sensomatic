@@ -1,8 +1,12 @@
 -module( sensomatic_web_controller ).
 
--export( [ zones/2, devices/2 ] ).
+-export( [ 
+	zones/3, 
+	zone/3,
+	devices/3 
+] ).
 
-zones( 'GET', Req ) ->
+zones( 'GET', Req, _ ) ->
 	{ ok, Html } = zones_dtl:render( [
 		{ zones, lists:map( fun( { Zone, _ } ) -> Zone end, sensomatic:zones() ) }
 	] ),
@@ -10,7 +14,7 @@ zones( 'GET', Req ) ->
 	Req:respond( { 200, [
 		{ "Content-Type", "text/html" }
 	], Html } );
-zones( 'POST', Req ) ->
+zones( 'POST', Req, Args ) ->
 	PostData = Req:parse_post(),
 	case proplists:get_value( "submit", PostData ) of
 		"Add Zone" ->
@@ -28,9 +32,18 @@ zones( 'POST', Req ) ->
 			end,
 			sensomatic:remove_zone( ZoneId )
 	end,
-	zones( 'GET', Req ).
+	zones( 'GET', Req, Args ).
 
-devices( 'GET', Req ) ->
+zone( 'GET', Req, [ ZoneId ] ) ->
+	{ ok, Html } = zone_dtl:render( [
+		{ zone_id, ZoneId }
+	] ),
+
+	Req:respond( { 200, [
+		{ "Content-Type", "text/html" }
+	], Html } ).
+
+devices( 'GET', Req, _ ) ->
 	Devices = lists:map( fun( { DeviceId, DevicePid } ) ->
 		[
 			{ pid, io_lib:format( "~p", [ DevicePid ] ) },
@@ -45,7 +58,7 @@ devices( 'GET', Req ) ->
 		]
 	end, sensomatic:devices() ),
 	
-	{ ok, Html } = device_list_dtl:render( [
+	{ ok, Html } = devices_dtl:render( [
 		{ devices, Devices },
 		{ port_select, helper:html_port_select( all ) }
 	] ),
