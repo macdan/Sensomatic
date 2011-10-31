@@ -1,0 +1,30 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>MochiWeb Tutorial</title>
+    <link rel="stylesheet" type="text/css" href="/style.css" media="screen">
+  </head>
+  <body>
+    <h1>Zones</h1>
+    
+    <h2>Defined Zones</h2>
+    <table>
+    {% for zone in zones %}
+    	<tr>
+    		<td>{{ zone }}</td>
+    		<td><form action="/zones" method="post">
+    			<input type="hidden" name="zone_id" value="{{ zone }}"/>
+    			<input type="submit" name="submit" value="Remove Zone"/>
+    			</form></td>
+    	</tr>
+    {% endfor %}
+    </table>
+    
+    <h2>Add Zone</h2>
+    <form id="add_zone" action="/zones" method="post">
+    	<label for="zone_id">Zone Id:</label><input type="text" id="zone_id" name="zone_id"/><br/>
+    	<input type="submit" name="submit" value="Add Zone"/>
+    </form>
+  </body>
+</html>

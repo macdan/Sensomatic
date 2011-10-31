@@ -1,0 +1,9 @@
+{ application, sensomatic, [
+	{ description, "Sensomatic" },
+	{ vsn, "0.1" },
+	{ modules, [] },
+	{ registered, [] },
+	{ mod, { 'sensomatic', [] } },
+	{ env, [] },
+	{ applications, [ kernel, stdlib, crypto ] }
+] }.
