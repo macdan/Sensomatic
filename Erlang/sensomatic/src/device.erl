@@ -122,8 +122,8 @@ handle_cast( invert, State ) ->
 handle_cast( commit, State ) ->
 	Values = lists:map( fun( { _, Pid } ) ->
 		case port:get_value( Pid ) of
-			on  -> "1";
-			off -> "0"
+			1 -> "1";
+			0 -> "0"
 		end
 	end, State#state.ports ),
 	Line = "VALUES: " ++ string:join( Values, "," ) ++ "\r\n",
@@ -151,10 +151,10 @@ handle_info( { tcp, _Port, "PORTS:" ++ Tail }, State ) ->
 	PortPids = lists:map( fun( Port ) ->
 		{ Id2, PortSpec } = case string:tokens( Port, ":" ) of
 
-			[ Id, "I", "A" | _ ] -> { Id, { self(), Id, { input , analog  } } };
-			[ Id, "O", "A" | _ ] -> { Id, { self(), Id, { output, analog  } } };
-			[ Id, "I", "D" | _ ] -> { Id, { self(), Id, { input , digital } } };
-			[ Id, "O", "D" | _ ] -> { Id, { self(), Id, { output, digital } } };
+			[ Id, "I", "A" | _ ] -> { Id, { self(), Id, { ro, analog  } } };
+			[ Id, "O", "A" | _ ] -> { Id, { self(), Id, { rw, analog  } } };
+			[ Id, "I", "D" | _ ] -> { Id, { self(), Id, { ro, digital } } };
+			[ Id, "O", "D" | _ ] -> { Id, { self(), Id, { rw, digital } } };
 			
 			Else -> 
 				util:shout( "Unknown port type: ~p", [ Else ] ),
