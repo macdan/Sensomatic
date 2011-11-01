@@ -15,7 +15,6 @@ dispatch( Request, [ { RegExp, { Module, Function } } | Routes ] ) ->
 	case Match of
 		%% Found route
 		{ match, [ Matches ] } -> 
-			util:shout( "Matches: ~p", [ Matches ] ),
 			Module:Function( Method, Request, Matches );
 		
 		%% Didn't match, keep going
