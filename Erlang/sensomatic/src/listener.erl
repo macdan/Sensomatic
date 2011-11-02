@@ -40,7 +40,7 @@ init( [ Port, Options ] ) ->
 			util:shout( "Listening on port ~p with socket ~p", 
 				[ Port, ListenSocket ] ),
 				
-			{ ok, Supervisor } = device_sup:start_link( ListenSocket ),
+			{ ok, Supervisor } = client_sup:start_link( ListenSocket ),
 			{ ok, #state{ 
 				socket     = ListenSocket,
 				supervisor = Supervisor

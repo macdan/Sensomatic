@@ -102,7 +102,7 @@ handle_call( get_value, _From, State ) ->
 %%------------------------------------------------------------------------------
 %% Set Value (Read-Write)
 %%------------------------------------------------------------------------------
-handle_call( { set_value, Value }, _From, State = #state{ type = { rw, _ } } ) ->
+handle_call( { set_value, Value }, _From, State ) ->
 	if
 		Value =/= State#state.value ->
 			gen_event:notify( State#state.event, { value_changed, self(), Value } );
@@ -113,11 +113,6 @@ handle_call( { set_value, Value }, _From, State = #state{ type = { rw, _ } } ) -
 	end,
 	NewState = State#state{ value = Value },
 	{ reply, ok, NewState };
-%%------------------------------------------------------------------------------
-%% Set Value (Read-Only)
-%%------------------------------------------------------------------------------
-handle_call( { set_value, _ }, _, State = #state{ type = { ro, _ } } ) ->
-	{ reply, { error, read_only }, State };
 %%------------------------------------------------------------------------------
 %% Catch All
 %%------------------------------------------------------------------------------

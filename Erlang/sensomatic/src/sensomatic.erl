@@ -56,7 +56,9 @@ remove_zone( Id ) ->
 %% @doc Get a list of registered devices
 %%==============================================================================
 devices() -> 
-	device_reg:list().
+	lists:map( fun( { Id, Pid, _, _ } ) ->
+		{ Id, Pid }
+	end, supervisor:which_children( device_sup ) ).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% application callbacks
@@ -68,7 +70,7 @@ devices() ->
 start( Type, Args ) -> 
 	util:shout( "Starting ~s Type: ~p Args: ~p", [ ?MODULE, Type, Args ] ),
 	
-	{ ok, _ } = device_reg:start_link(),
+	{ ok, _ } = device_sup:start_link(),
 	
 	register( ?MODULE, self() ),
 	
