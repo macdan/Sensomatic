@@ -22,7 +22,7 @@
 -record( state, { 
 	socket, 
 	device,
-	port_sup,
+	resumed = false,
 	id,
 	ports = []
 } ).
@@ -117,15 +117,33 @@ handle_cast( _, State ) ->
 %%------------------------------------------------------------------------------
 handle_info( { tcp, _Port, "DEVICE:" ++ Tail }, State ) ->
 	[ Id ] = string:tokens( Tail, " \r\n" ),
-	{ ok, Pid } = device_sup:start_device( Id ),
-	{ noreply, State#state{ 
-		id = Id, 
-		device = Pid 
-	} };
+	
+	NewState = case device_sup:start_or_resume_device( Id ) of
+		
+		{ ok, DevicePid } -> 
+			State#state{ 
+				id = Id, 
+				device = DevicePid 
+			};
+			
+		{ resumed, DevicePid } -> 
+			Ports = lists:map( fun( { PortId, PortPid, _ } ) ->
+				{ PortId, PortPid }
+			end, device:get_ports( DevicePid ) ),
+			State#state{ 
+				id = Id, 
+				device = DevicePid, 
+				resumed = true,
+				ports = lists:reverse( Ports )
+			}
+	end,
+	
+	{ noreply, NewState };
 %%------------------------------------------------------------------------------
 %% TCP: Got PORTS: line
 %%------------------------------------------------------------------------------
-handle_info( { tcp, _Port, "PORTS:" ++ Tail }, State ) ->
+handle_info( { tcp, _Port, "PORTS:" ++ Tail }, State = #state{ resumed = Resumed } ) 
+	when Resumed =:= false ->
 	
 	Ports = lists:map( fun( PortSpec = { Id, _, _ } ) ->
 		{ ok, Pid } = device:add_port( State#state.device, PortSpec ),
