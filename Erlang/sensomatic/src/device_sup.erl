@@ -38,6 +38,12 @@ start_or_resume_device( Id ) ->
 %%
 %% @doc Start a device process with the given ID
 %%==============================================================================
+start_device( { Id, PortSpecs } ) ->
+	{ ok, Pid } = start_device( Id ),
+	lists:foreach( fun( PortSpec ) ->
+		device:add_port( Pid, PortSpec )
+	end, PortSpecs ),
+	{ ok, Pid };
 start_device( Id ) ->
 	supervisor:start_child( ?MODULE, {
 		Id,
