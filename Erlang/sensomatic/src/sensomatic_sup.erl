@@ -1,7 +1,8 @@
 -module( sensomatic_sup ).
 
 -export( [ 
-	start_link/0
+	start_link/0,
+	start_child/1
 ] ).
 
 -behaviour( supervisor ).
@@ -15,7 +16,13 @@
 %% start_link/0
 %%==============================================================================
 start_link() ->
-    supervisor:start_link( { local, ?MODULE }, ?MODULE, [] ).
+	supervisor:start_link( { local, ?MODULE }, ?MODULE, [] ).
+
+%%==============================================================================
+%% start_child/1
+%%==============================================================================
+start_child( ChildSpec ) ->
+	supervisor:start_child( ?MODULE, ChildSpec ).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% supervisor callbacks
