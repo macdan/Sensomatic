@@ -69,21 +69,10 @@ devices() ->
 %%==============================================================================
 start( Type, Args ) -> 
 	util:shout( "Starting ~s Type: ~p Args: ~p", [ ?MODULE, Type, Args ] ),
-	
-	{ ok, _ } = device_sup:start_link(),
-	
 	register( ?MODULE, self() ),
 	
-	zone_sup:start_link(),
-	
-	listener:start_link( 8181, [
-		{ active, true },
-		{ packet, line },
-		{ reuseaddr, true }
-	] ),
-	
 	sensomatic_web_deps:ensure(),
-	sensomatic_web_sup:start_link().
+	sensomatic_sup:start_link().
 
 %%==============================================================================
 %% stop/1
