@@ -9,10 +9,10 @@
 start_link() ->
     supervisor:start_link( ?MODULE, [] ).
 
-start_child( Pid, { DevicePid, Id, Type } ) ->
+start_child( Pid, PortSpec = { _, Id, _, _ } ) ->
     supervisor:start_child( Pid, { 
     	Id, 
-    	{ port, start_link, [ DevicePid, Id, Type ] }, 
+    	{ port, start_link, [ PortSpec ] }, 
     	permanent, 
     	1000, 
     	worker, 

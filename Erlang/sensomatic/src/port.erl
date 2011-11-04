@@ -1,11 +1,13 @@
 -module( port ).
 
 -export( [ 
+	start_link/1,
 	start_link/3, 
 	set_value/2, 
 	get_value/1,
 	on/1,
-	off/1
+	off/1,
+	validate/2
 ] ).
 
 -behaviour( gen_server ).
@@ -18,14 +20,17 @@
 	terminate/2 
 ] ).
 
--record( state, { device, event, id, type, value } ).
+-record( state, { device, event, id, rw, ad, type, value } ).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% module api
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-start_link( Pid, Id, Type ) -> 
-	gen_server:start_link( ?MODULE, [ Pid, Id, Type ], [] ).
+start_link( DevicePid, Id, { Rw, _ } ) -> 
+	gen_server:start_link( ?MODULE, [ { DevicePid, Id, Rw, { analog, { 0, 2041 } } } ], [] ).
+
+start_link( PortSpec ) ->
+	gen_server:start_link( ?MODULE, [ PortSpec ], [] ).
 
 set_value( Pid, Value ) -> 
 	gen_server:call( Pid, { set_value, Value } ).
@@ -60,14 +65,16 @@ off( Pids ) when is_list( Pids ) ->
 %%==============================================================================
 %% init/1
 %%==============================================================================
-init( [ DevicePid, Id, Type ] ) ->
+%init( [ DevicePid, Id, Type = { Rw, Ad } ] ) ->
+init( [ { DevicePid, Id, Rw, Type } ] ) ->
 	util:shout( "Starting ~p port ~p on device ~p...", [ Id, Type, DevicePid ] ),
 	{ ok, EventPid } = gen_event:start_link(),
 	{ ok, #state{ 
 		device = DevicePid,
-		event = EventPid,
 		id = Id,
-		type = Type
+		rw = Rw,
+		type = Type,
+		event = EventPid
 	} }.
 
 %%==============================================================================
@@ -118,18 +125,44 @@ handle_call( { set_value, Value }, _From, State ) ->
 %%------------------------------------------------------------------------------
 handle_call( Call, _From, State ) ->
 	util:shout( "unexpected call: ~p", [ Call ] ),
-    { noreply, State }.
+	{ noreply, State }.
 
 %%==============================================================================
 %% code_change/3
 %%==============================================================================
 code_change( _OldVsn, State, _Extra ) ->
-    { ok, State }.
+	{ ok, State }.
 
 %%==============================================================================
 %% terminate/2
 %%==============================================================================
 terminate( normal, _State ) ->
-    ok;
+	ok;
 terminate( Reason, _State ) ->
-    util:shout( "terminate reason: ~p~n", [ Reason ] ).
+	util:shout( "terminate reason: ~p~n", [ Reason ] ).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% private functions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% @spec validate( port_type(), Value ) -> ok | error
+validate( { scale, Scale, _ }, { scale, Scale, Value } ) ->
+	Value;
+validate( { scale, { Min, Max }, _ }, Value ) when 
+	is_integer( Value ), Value >= Min, Value =< Max;
+	is_float( Value ), Value >= Min, Value =< Max -> 
+	Value;
+validate( { scale, { _, Max }, _ }, Value ) when Value == true ->
+	Max;
+validate( { scale, { Min, _ }, _ }, Value ) when Value == false ->
+	Min;
+validate( { digital, _ }, Value ) when Value == true; Value == false ->
+	Value;
+validate( { digital, _ }, Value ) when is_integer( Value ); is_float( Value ) ->
+	if
+		Value =< 0 -> false;
+		Value > 0  -> true
+	end;
+	
+validate( _, _ ) ->
+	error.

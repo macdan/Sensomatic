@@ -21,6 +21,7 @@
 
 -record( state, { 
 	socket, 
+	device_type,
 	device,
 	resumed = false,
 	id,
@@ -123,6 +124,7 @@ handle_info( { tcp, _Port, "DEVICE:" ++ Tail }, State ) ->
 		{ ok, DevicePid } -> 
 			State#state{ 
 				id = Id, 
+				device_type = Id,
 				device = DevicePid 
 			};
 			
@@ -132,6 +134,7 @@ handle_info( { tcp, _Port, "DEVICE:" ++ Tail }, State ) ->
 			end, device:get_ports( DevicePid ) ),
 			State#state{ 
 				id = Id, 
+				device_type = Id,
 				device = DevicePid, 
 				resumed = true,
 				ports = lists:reverse( Ports )
@@ -142,14 +145,21 @@ handle_info( { tcp, _Port, "DEVICE:" ++ Tail }, State ) ->
 %%------------------------------------------------------------------------------
 %% TCP: Got PORTS: line
 %%------------------------------------------------------------------------------
-handle_info( { tcp, _Port, "PORTS:" ++ Tail }, State = #state{ resumed = Resumed } ) 
-	when Resumed =:= false ->
-	
-	Ports = lists:map( fun( PortSpec = { Id, _, _ } ) ->
+handle_info( { tcp, _, "PORTS:" ++ _ }, State = #state{ resumed = Resumed } )
+	when Resumed =:= true -> 
+	% Safely ignore ports line after resuming
+	{ noreply, State };
+handle_info( { tcp, _, "PORTS:" ++ Tail }, State ) ->
+	Ports = lists:map( fun( ParsedPort ) ->
+		PortSpec = case ParsedPort of
+			{ Id, input, digital } -> { State#state.device, Id, ro, { digital, false } };
+			{ Id, output, digital } -> { State#state.device, Id, rw, { digital, false } };
+			{ Id, input, analog } -> { State#state.device, Id, ro, { scale, { 0, 1024 }, 0 } };
+			{ Id, output, analog } -> { State#state.device, Id, rw, { scale, { 0, 1024 }, 0 } }
+		end,
 		{ ok, Pid } = device:add_port( State#state.device, PortSpec ),
 		{ Id, Pid }
 	end, parse_ports( Tail ) ),
-	
 	{ noreply, State#state{ ports = Ports } };
 %%------------------------------------------------------------------------------
 %% TCP: Got DONE line
@@ -169,7 +179,7 @@ handle_info( { tcp, _Port, "VALUES:" ++ Csv }, State ) ->
 %% TCP: Got unknown line
 %%------------------------------------------------------------------------------
 handle_info( { tcp, _Port, Line }, State ) ->
-    util:shout( "~s", [ Line ] ),
+    util:shout( "Unknown Line: ~p", [ Line ] ),
     { noreply, State };
 %%------------------------------------------------------------------------------
 %% TCP: Socket closed
@@ -209,10 +219,10 @@ parse_ports( PortsString ) ->
 
 parse_port( PortString ) ->
 	case string:tokens( PortString, ":" ) of
-			[ Id, "I", "A" | _ ] -> { Id, ro, analog  };
-			[ Id, "O", "A" | _ ] -> { Id, rw, analog  };
-			[ Id, "I", "D" | _ ] -> { Id, ro, digital };
-			[ Id, "O", "D" | _ ] -> { Id, rw, digital }
+			[ Id, "I", "A" | _ ] -> { Id, input, analog };
+			[ Id, "O", "A" | _ ] -> { Id, output, analog };
+			[ Id, "I", "D" | _ ] -> { Id, input, digital };
+			[ Id, "O", "D" | _ ] -> { Id, output, digital }
 	end.
 
 parse_value( ValueString ) ->

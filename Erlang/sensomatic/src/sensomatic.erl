@@ -76,9 +76,10 @@ start( Type, Args ) ->
 	
 	zone_sup:start_link(),
 	
-	listener:start_link( 10001, [
+	listener:start_link( 8181, [
 		{ active, true },
-		{ packet, line }
+		{ packet, line },
+		{ reuseaddr, true }
 	] ),
 	
 	sensomatic_web_deps:ensure(),

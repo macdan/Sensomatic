@@ -76,8 +76,8 @@ init( [] ) ->
 %%==============================================================================
 %% Add Port
 %%------------------------------------------------------------------------------
-handle_call( { add_port, _PortSpec = { Id, Rw, Ad } }, _, State ) ->
-	R = port_sup:start_child( State#state.port_sup, { self(), Id, { Rw, Ad } } ),
+handle_call( { add_port, PortSpec }, _, State ) ->
+	R = port_sup:start_child( State#state.port_sup, PortSpec ),
 	{ reply, R, State };
 %%------------------------------------------------------------------------------
 %% Ports
