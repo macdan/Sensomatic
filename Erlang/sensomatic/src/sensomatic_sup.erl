@@ -2,7 +2,12 @@
 
 -export( [ 
 	start_link/0,
-	start_child/1
+	start_child/1,
+	restart_child/1,
+	terminate_child/1,
+	delete_child/1,
+	which_children/0,
+	start_worker/1
 ] ).
 
 -behaviour( supervisor ).
@@ -22,6 +27,39 @@ start_link() ->
 %% start_child/1
 %%==============================================================================
 start_child( ChildSpec ) ->
+	supervisor:start_child( ?MODULE, ChildSpec ).
+
+%%==============================================================================
+%% restart_child/1
+%%==============================================================================
+restart_child( Id ) ->
+	supervisor:restart_child( ?MODULE, Id ).
+
+%%==============================================================================
+%% terminate_child/1
+%%==============================================================================
+terminate_child( Id ) ->
+	supervisor:terminate_child( ?MODULE, Id ).
+
+%%==============================================================================
+%% delete_child/1
+%%==============================================================================
+delete_child( Id ) ->
+	supervisor:delete_child( ?MODULE, Id ).
+
+%%==============================================================================
+%% which_children/0
+%%==============================================================================
+which_children() ->
+	supervisor:which_children( ?MODULE ).
+
+%%==============================================================================
+%% start_worker/1
+%%==============================================================================
+start_worker( Mfa = { Mod, _, _ } ) ->
+	start_worker( { Mod, Mfa } );
+start_worker( { Id, Mfa = { Mod, _, _ } } ) ->
+	ChildSpec = { Id, Mfa, temporary, 1000, supervisor, [ Mod ] },
 	supervisor:start_child( ?MODULE, ChildSpec ).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

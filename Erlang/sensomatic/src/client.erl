@@ -2,9 +2,12 @@
 
 -export( [ 
 	start_link/1,
+	send/2,
+	
 	get_id/1,
 	get_ports/1,
 	commit/1,
+	
 	parse_ports/1,
 	parse_port/1
 ] ).
@@ -53,6 +56,9 @@ get_ports( Pid ) when is_pid( Pid ) ->
 commit( Pid ) when is_pid( Pid ) ->
 	gen_server:cast( Pid, commit ).
 
+send( Pid, Data ) ->
+	gen_server:call( Pid, { send, Data } ).
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% gen_server callbacks
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -70,6 +76,12 @@ init( [ Socket ] ) ->
 %%==============================================================================
 %% handle_call
 %%==============================================================================
+%%------------------------------------------------------------------------------
+handle_call( { send, Data }, _, State ) ->
+	{ reply,
+		gen_tcp:send( State#state.socket, Data ),
+	State };
+%%------------------------------------------------------------------------------
 %% Socket
 %%------------------------------------------------------------------------------
 handle_call( socket, _, State ) ->
@@ -122,6 +134,7 @@ handle_info( { tcp, _Port, "DEVICE:" ++ Tail }, State ) ->
 	NewState = case device_sup:start_or_resume_device( Id ) of
 		
 		{ ok, DevicePid } -> 
+			device:add_handler( DevicePid, client_handler_device, [ self() ] ),
 			State#state{ 
 				id = Id, 
 				device_type = Id,
@@ -129,6 +142,8 @@ handle_info( { tcp, _Port, "DEVICE:" ++ Tail }, State ) ->
 			};
 			
 		{ resumed, DevicePid } -> 
+			device:add_handler( DevicePid, client_handler_device, [ self() ] ),
+			device:commit( DevicePid ),
 			Ports = lists:map( fun( { PortId, PortPid, _ } ) ->
 				{ PortId, PortPid }
 			end, device:get_ports( DevicePid ) ),
@@ -141,12 +156,13 @@ handle_info( { tcp, _Port, "DEVICE:" ++ Tail }, State ) ->
 			}
 	end,
 	
+	
+	
 	{ noreply, NewState };
 %%------------------------------------------------------------------------------
 %% TCP: Got PORTS: line
 %%------------------------------------------------------------------------------
-handle_info( { tcp, _, "PORTS:" ++ _ }, State = #state{ resumed = Resumed } )
-	when Resumed =:= true -> 
+handle_info( { tcp, _, "PORTS:" ++ _ }, State = #state{ resumed = true } ) -> 
 	% Safely ignore ports line after resuming
 	{ noreply, State };
 handle_info( { tcp, _, "PORTS:" ++ Tail }, State ) ->
