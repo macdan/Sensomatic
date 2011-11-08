@@ -56,6 +56,9 @@ get_ports( Pid ) when is_pid( Pid ) ->
 commit( Pid ) when is_pid( Pid ) ->
 	gen_server:cast( Pid, commit ).
 
+%%==============================================================================
+%% commit/2
+%%==============================================================================
 send( Pid, Data ) ->
 	gen_server:call( Pid, { send, Data } ).
 
