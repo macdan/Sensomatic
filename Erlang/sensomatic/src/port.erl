@@ -16,7 +16,14 @@
 	terminate/2 
 ] ).
 
--record( state, { device, event, id, rw, ad, type, value } ).
+-record( state, { 
+	device, 
+	event, 
+	id, 
+	rw, 
+	type, 
+	value 
+} ).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% module api
