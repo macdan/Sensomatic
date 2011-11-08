@@ -11,7 +11,7 @@ byte ip[] = { 192, 168, 1, 2 };
 byte server[] = { 192, 168, 1, 1 }; 
 
 // Port number to connect to the server on
-int port = 10001;
+int port = 8181;
 
 // Number of analog inputs to read
 int inputs = 6;

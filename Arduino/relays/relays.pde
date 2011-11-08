@@ -11,7 +11,7 @@ byte ip[] = { 192, 168, 1, 2 };
 byte server[] = { 192, 168, 1, 1 }; 
 
 // Port number to connect to the server on
-int port = 10001;
+int port = 8181;
 
 // Number of digital outputs
 int pins = 4;
@@ -140,11 +140,19 @@ void loop()
          
           if ( argument.equals( "0" ) )
           {
+            Serial.print( "Setting " );
+            Serial.print( argIdx );
+            Serial.println( " low." );
+            
             state[ argIdx ] = LOW;
             digitalWrite( pin[ argIdx ], state[ argIdx ] );
           }
           else if ( argument.equals( "1" ) )
           {
+             Serial.print( "Setting " );
+            Serial.print( argIdx );
+            Serial.println( " high." );
+            
             state[ argIdx ] = HIGH;
             digitalWrite( pin[ argIdx ], state[ argIdx ] );
           }
