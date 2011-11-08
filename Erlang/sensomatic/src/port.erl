@@ -2,7 +2,6 @@
 
 -export( [ 
 	start_link/1,
-	start_link/3, 
 	set_value/2, 
 	get_value/1,
 	on/1,
@@ -26,17 +25,29 @@
 %% module api
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-start_link( DevicePid, Id, { Rw, _ } ) -> 
-	gen_server:start_link( ?MODULE, [ { DevicePid, Id, Rw, { analog, { 0, 2041 } } } ], [] ).
-
+%%==============================================================================
+%% start_link/1
+%%==============================================================================
 start_link( PortSpec ) ->
 	gen_server:start_link( ?MODULE, [ PortSpec ], [] ).
 
+%%==============================================================================
+%% set_value/2
+%%==============================================================================
 set_value( Pid, Value ) -> 
 	gen_server:call( Pid, { set_value, Value } ).
 	
+%%==============================================================================
+%% get_value/1
+%%==============================================================================
 get_value( Pid ) -> 
 	gen_server:call( Pid, get_value ).
+
+%%==============================================================================
+%% subscribe/2
+%%==============================================================================
+subscribe( Pid, Subscriber ) ->
+	gen_server:call( Pid, { subscribe, Subscriber } ).
 
 %%==============================================================================
 %% on/1
@@ -65,7 +76,6 @@ off( Pids ) when is_list( Pids ) ->
 %%==============================================================================
 %% init/1
 %%==============================================================================
-%init( [ DevicePid, Id, Type = { Rw, Ad } ] ) ->
 init( [ { DevicePid, Id, Rw, Type } ] ) ->
 	util:shout( "Starting ~p port ~p on device ~p...", [ Id, Type, DevicePid ] ),
 	{ ok, EventPid } = gen_event:start_link(),
@@ -102,12 +112,18 @@ handle_info( Msg, State ) ->
 %%==============================================================================
 %% handle_call/2
 %%==============================================================================
+%% Subscribe
+%%------------------------------------------------------------------------------
+handle_call( { subscribe, Subscriber }, _, State ) ->
+	gen_event:add_handler( State#state.event, port_subscribe, [ Subscriber ] ),
+	{ reply, State#state.value, State };
+%%------------------------------------------------------------------------------
 %% Get Value
 %%------------------------------------------------------------------------------
 handle_call( get_value, _From, State ) ->
 	{ reply, State#state.value, State };
 %%------------------------------------------------------------------------------
-%% Set Value (Read-Write)
+%% Set Value
 %%------------------------------------------------------------------------------
 handle_call( { set_value, Value }, _From, State ) ->
 	if
@@ -144,25 +160,3 @@ terminate( Reason, _State ) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% private functions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% @spec validate( port_type(), Value ) -> ok | error
-validate( { scale, Scale, _ }, { scale, Scale, Value } ) ->
-	Value;
-validate( { scale, { Min, Max }, _ }, Value ) when 
-	is_integer( Value ), Value >= Min, Value =< Max;
-	is_float( Value ), Value >= Min, Value =< Max -> 
-	Value;
-validate( { scale, { _, Max }, _ }, Value ) when Value == true ->
-	Max;
-validate( { scale, { Min, _ }, _ }, Value ) when Value == false ->
-	Min;
-validate( { digital, _ }, Value ) when Value == true; Value == false ->
-	Value;
-validate( { digital, _ }, Value ) when is_integer( Value ); is_float( Value ) ->
-	if
-		Value =< 0 -> false;
-		Value > 0  -> true
-	end;
-	
-validate( _, _ ) ->
-	error.
