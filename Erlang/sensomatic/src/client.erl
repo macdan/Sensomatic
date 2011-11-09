@@ -24,7 +24,6 @@
 
 -record( state, { 
 	socket, 
-	device_type,
 	device,
 	resumed = false,
 	id,
@@ -140,7 +139,6 @@ handle_info( { tcp, _Port, "DEVICE:" ++ Tail }, State ) ->
 			device:add_handler( DevicePid, client_handler_device, [ self() ] ),
 			State#state{ 
 				id = Id, 
-				device_type = Id,
 				device = DevicePid 
 			};
 			
@@ -152,7 +150,6 @@ handle_info( { tcp, _Port, "DEVICE:" ++ Tail }, State ) ->
 			end, device:get_ports( DevicePid ) ),
 			State#state{ 
 				id = Id, 
-				device_type = Id,
 				device = DevicePid, 
 				resumed = true,
 				ports = lists:reverse( Ports )
