@@ -2,14 +2,7 @@
 
 -export( [ 
 	start_link/1,
-	send/2,
-	
-	get_id/1,
-	get_ports/1,
-	commit/1,
-	
-	parse_ports/1,
-	parse_port/1
+	send/2
 ] ).
 
 -behaviour( gen_server ).
@@ -40,21 +33,6 @@
 start_link( Socket ) ->
     gen_server:start_link( ?MODULE, [ Socket ], [] ).
 
-get_id( Pid ) when is_pid( Pid ) ->
-	gen_server:call( Pid, id ).
-
-%%==============================================================================
-%% get_ports/1
-%%==============================================================================
-get_ports( Pid ) when is_pid( Pid ) ->
-	gen_server:call( Pid, ports ).
-
-%%==============================================================================
-%% commit/1
-%%==============================================================================
-commit( Pid ) when is_pid( Pid ) ->
-	gen_server:cast( Pid, commit ).
-
 %%==============================================================================
 %% commit/2
 %%==============================================================================
@@ -84,11 +62,6 @@ handle_call( { send, Data }, _, State ) ->
 		gen_tcp:send( State#state.socket, Data ),
 	State };
 %%------------------------------------------------------------------------------
-%% Socket
-%%------------------------------------------------------------------------------
-handle_call( socket, _, State ) ->
-	{ reply, State#state.socket, State };
-%%------------------------------------------------------------------------------
 %% Catch All
 %%------------------------------------------------------------------------------
 handle_call( _E, _From, State ) ->
@@ -106,19 +79,6 @@ handle_cast( accept, S = #state{ socket=ListenSocket } ) ->
 	{ noreply, S#state{ 
 		socket = AcceptSocket
 	} };
-%%------------------------------------------------------------------------------
-%% Commit
-%%------------------------------------------------------------------------------
-handle_cast( commit, State ) ->
-	Values = lists:map( fun( { _, Pid } ) ->
-		case port:get_value( Pid ) of
-			1 -> "1";
-			0 -> "0"
-		end
-	end, State#state.ports ),
-	Line = "VALUES: " ++ string:join( Values, "," ) ++ "\r\n",
-	gen_tcp:send( State#state.socket, Line ),
-	{ noreply, State };
 %%------------------------------------------------------------------------------
 %% Catch All
 %%------------------------------------------------------------------------------
