@@ -72,15 +72,9 @@ start_worker( { Id, Mfa = { Mod, _, _ } } ) ->
 init( [] ) ->
 	{ ok, { { one_for_one, 60, 3600 }, [
 		
-		{ device_sup, { device_sup, start_link, [] }, temporary, 1000, supervisor, [ device_sup ] },
-		
 		{ zone_sup, { zone_sup, start_link, [] }, temporary, 1000, supervisor, [ zone_sup ] },
-		
-		{ listener, { listener, start_link, [ 8181, [
-			{ active, true },
-			{ packet, line },
-			{ reuseaddr, true }
-		] ] }, temporary, 1000, worker, [ listener ] },
+
+		{ arduino_sup, { arduino_sup, start_link, [] }, temporary, 1000, supervisor, [ arduino_sup ] },
 		
 		{ sensomatic_web_sup, { sensomatic_web_sup, start_link, [] }, temporary, 1000, supervisor, [ sensomatic_web_sup ] }
 
