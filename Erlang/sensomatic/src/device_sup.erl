@@ -3,6 +3,7 @@
 
 -export( [ 
 	start_link/0, 
+	start_worker/1,
 	start_or_resume_device/1,
 	start_device/1,
 	get_device/1
@@ -18,6 +19,15 @@
 %%==============================================================================
 start_link() ->
     supervisor:start_link( { local, ?MODULE }, ?MODULE, [] ).
+
+%%==============================================================================
+%% start_worker/1
+%%==============================================================================
+start_worker( Mfa = { Mod, _, _ } ) ->
+	start_worker( { Mod, Mfa } );
+start_worker( { Id, Mfa = { Mod, _, _ } } ) ->
+	ChildSpec = { Id, Mfa, temporary, 1000, supervisor, [ Mod ] },
+	supervisor:start_child( ?MODULE, ChildSpec ).
 
 %%==============================================================================
 %% start_or_resume_device/1
