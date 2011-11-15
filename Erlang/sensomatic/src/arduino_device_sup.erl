@@ -1,4 +1,4 @@
--module( device_sup ).
+-module( arduino_device_sup ).
 -behaviour( supervisor ).
 
 -export( [ 

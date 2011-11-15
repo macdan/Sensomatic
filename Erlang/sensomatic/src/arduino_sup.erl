@@ -37,7 +37,7 @@ start_worker( { Id, Mfa = { Mod, _, _ } } ) ->
 init( [] ) ->
 	{ ok, { { one_for_one, 60, 3600 }, [
 		
-		{ device_sup, { device_sup, start_link, [] }, temporary, 1000, supervisor, [ device_sup ] },
+		{ arduino_device_sup, { arduino_device_sup, start_link, [] }, temporary, 1000, supervisor, [ arduino_device_sup ] },
 		
 		{ arduino_listener, { arduino_listener, start_link, [ 8181, [
 			{ active, true },

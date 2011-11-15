@@ -58,7 +58,7 @@ remove_zone( Id ) ->
 devices() -> 
 	lists:map( fun( { Id, Pid, _, _ } ) ->
 		{ Id, Pid }
-	end, supervisor:which_children( device_sup ) ).
+	end, supervisor:which_children( arduino_device_sup ) ).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% application callbacks
