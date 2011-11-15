@@ -1,4 +1,4 @@
--module( client ).
+-module( arduino_client ).
 
 -export( [ 
 	start_link/1,
@@ -91,9 +91,12 @@ handle_cast( _, State ) ->
 %% TCP: Got DEVICE: line
 %%------------------------------------------------------------------------------
 handle_info( { tcp, _Port, "DEVICE:" ++ Tail }, State ) ->
-	[ Id ] = string:tokens( Tail, " \r\n" ),
+	[ Id, _ ] = string:tokens( Tail, " \r\n" ),
 	
-	NewState = case device_sup:start_or_resume_device( Id ) of
+	DeviceModule = list_to_atom( "arduino_" ++ Type ),
+	util:shout( "Considering spawning a ~p", [ DeviceModule ] ),
+	
+	NewState = case device_sup:start_or_resume_device( { Id, Type } ) of
 		
 		{ ok, DevicePid } -> 
 			device:add_handler( DevicePid, client_handler_device, [ self() ] ),
@@ -115,9 +118,6 @@ handle_info( { tcp, _Port, "DEVICE:" ++ Tail }, State ) ->
 				ports = lists:reverse( Ports )
 			}
 	end,
-	
-	
-	
 	{ noreply, NewState };
 %%------------------------------------------------------------------------------
 %% TCP: Got PORTS: line

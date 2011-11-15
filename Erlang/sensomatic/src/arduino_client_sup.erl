@@ -33,8 +33,8 @@ init( [ ListenSocket ] ) ->
     spawn( fun() -> start_child() end ),
     
     { ok, { { simple_one_for_one, 60, 3600 }, [
-		{ client, 
-			{ client, start_link, [ ListenSocket ] },
+		{ arduino_client, 
+			{ arduino_client, start_link, [ ListenSocket ] },
 			temporary, 1000, worker, [ client ]
 		}
 	] } }.
