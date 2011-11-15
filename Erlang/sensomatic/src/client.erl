@@ -75,7 +75,7 @@ handle_call( _E, _From, State ) ->
 handle_cast( accept, S = #state{ socket=ListenSocket } ) ->
 	{ ok, AcceptSocket } = gen_tcp:accept( ListenSocket ),
 	util:shout( "Accepted socket ~p", [ AcceptSocket ] ),
-	client_sup:start_child(),
+	arduino_client_sup:start_child(),
 	{ noreply, S#state{ 
 		socket = AcceptSocket
 	} };

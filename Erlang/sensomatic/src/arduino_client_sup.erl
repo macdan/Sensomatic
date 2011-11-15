@@ -1,4 +1,4 @@
--module( client_sup ).
+-module( arduino_client_sup ).
 -behaviour( supervisor ).
 
 -export( [ start_link/1, start_child/0 ] ).

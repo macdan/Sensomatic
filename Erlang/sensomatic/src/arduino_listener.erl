@@ -40,7 +40,7 @@ init( [ Port, Options ] ) ->
 			util:shout( "Listening on port ~p with socket ~p", 
 				[ Port, ListenSocket ] ),
 				
-			{ ok, Supervisor } = client_sup:start_link( ListenSocket ),
+			{ ok, Supervisor } = arduino_client_sup:start_link( ListenSocket ),
 			{ ok, #state{ 
 				socket     = ListenSocket,
 				supervisor = Supervisor
