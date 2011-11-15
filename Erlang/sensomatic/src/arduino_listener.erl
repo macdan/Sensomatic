@@ -1,4 +1,4 @@
--module( listener ).
+-module( arduino_listener ).
 
 -export( [ start_link/2 ] ).
 

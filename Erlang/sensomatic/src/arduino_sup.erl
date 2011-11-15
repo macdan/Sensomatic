@@ -39,10 +39,10 @@ init( [] ) ->
 		
 		{ device_sup, { device_sup, start_link, [] }, temporary, 1000, supervisor, [ device_sup ] },
 		
-		{ listener, { listener, start_link, [ 8181, [
+		{ arduino_listener, { arduino_listener, start_link, [ 8181, [
 			{ active, true },
 			{ packet, line },
 			{ reuseaddr, true }
-		] ] }, temporary, 1000, worker, [ listener ] }
+		] ] }, temporary, 1000, worker, [ arduino_listener ] }
 
 	] } }.
