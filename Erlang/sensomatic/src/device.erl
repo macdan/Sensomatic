@@ -111,7 +111,7 @@ handle_call( { add_port, PortSpec }, _, State ) ->
 handle_call( ports, _From, State ) ->
 	Ports = lists:map( fun( { Id, Pid, _, _ } ) ->
 		{ Id, Pid, port:get_value( Pid ) }
-	end, supervisor:which_children( State#state.port_sup ) ),
+	end, lists:reverse( supervisor:which_children( State#state.port_sup ) ) ),
 	{ reply, Ports, State };
 %%------------------------------------------------------------------------------
 %% Catch All
