@@ -21,9 +21,7 @@ handle_event( { commit, Device }, State ) ->
 	Values = lists:map( fun( { _, _, Value } ) ->
 		case Value of
 			0 -> "0";
-			1 -> "1";
-			{ digital, low } -> "0";
-			{ digital, high } -> "1"
+			1 -> "1"
 		end
 	end, device:get_ports( Device ) ),
 	Line = "VALUES: " ++ string:join( Values, "," ) ++ "\r\n",
