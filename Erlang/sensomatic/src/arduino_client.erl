@@ -115,7 +115,7 @@ handle_info( { tcp, _Port, "DEVICE:" ++ Tail }, State ) ->
 				id = Id, 
 				device = DevicePid, 
 				resumed = true,
-				ports = lists:reverse( Ports )
+				ports = Ports
 			}
 	end,
 	{ noreply, NewState };
