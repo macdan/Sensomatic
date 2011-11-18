@@ -36,6 +36,9 @@
 start_link() ->
     gen_server:start_link( ?MODULE, [], [] ).
 
+%%==============================================================================
+%% get_id/1
+%%==============================================================================
 get_id( Pid ) when is_pid( Pid ) ->
 	gen_server:call( Pid, id ).
 
@@ -51,6 +54,9 @@ add_port( Pid, PortSpec ) ->
 get_ports( Pid ) when is_pid( Pid ) ->
 	gen_server:call( Pid, ports ).
 	
+%%==============================================================================
+%% get_port/2
+%%==============================================================================
 get_port( DevicePid, Id ) ->
 	case proplists:lookup( Id, get_ports( DevicePid ) ) of
 		{ _, PortPid, _ } -> PortPid;
