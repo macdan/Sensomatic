@@ -49,7 +49,7 @@ void setup()
     }
   }
   
-  client.println( "DEVICE: arduinosensors" );
+  client.println( "DEVICE: arduinosensors proto2" );
   client.println( "PORTS: ldr1:I:A:0-1024,ldr2:I:A:0-1024,therm:I:A:0-1024,aux1:I:A:0-1024,aux2:I:A:0-1024,aux3:I:A:0-1024" );
   client.println( "DONE" );
   
