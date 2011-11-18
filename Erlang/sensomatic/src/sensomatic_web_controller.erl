@@ -49,10 +49,12 @@ devices( 'GET', Req, _ ) ->
 			{ pid, io_lib:format( "~p", [ DevicePid ] ) },
 			{ id, DeviceId },
 			{ ports, lists:map( fun( { PortId, PortPid, PortValue } ) ->
+				{ _, PortId, Rw, _Type } = port:get_spec( PortPid ),
 				[
 					{ pid, io_lib:format( "~p", [ PortPid ] ) },
 					{ id, PortId },
-					{ value, PortValue }
+					{ value, PortValue },
+					{ rw, Rw }
 				]
 			end, device:get_ports( DevicePid ) ) }
 		]
@@ -65,4 +67,20 @@ devices( 'GET', Req, _ ) ->
 
 	Req:respond( { 200, [
 		{ "Content-Type", "text/html" }
-	], Html } ).
+	], Html } );
+
+devices( 'POST', Req, _ ) ->
+	PostData = Req:parse_post(),
+	[ DeviceId, PortId ] = string:tokens( proplists:get_value( "port", PostData ), "-" ),
+	
+	DevicePid = arduino_device_sup:get_device( DeviceId ),
+	PortPid = device:get_port( DevicePid, PortId ),
+	
+	case port:get_value( PortPid ) of
+		0 -> port:set_value( PortPid, 1 );
+		1 -> port:set_value( PortPid, 0 )
+	end,
+	
+	device:commit( DevicePid ),
+	
+	devices( 'GET', Req, [] ).

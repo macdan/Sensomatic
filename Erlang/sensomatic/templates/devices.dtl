@@ -15,7 +15,13 @@
     	<h2>{{ device.pid }} {{ device.id }}</h2>
     	<ul>
     	{% for port in device.ports %}
-    		<li>{{port.pid}} {{ port.id }}: {{ port.value }}</li>
+    		<li>
+    			<span>{{port.pid}} {{ port.id }}: {{ port.value }}</span>
+    			<form method="post">
+    				<input type="hidden" name="port" value="{{device.id}}-{{port.id}}"/>
+    				<input type="submit" name="submit" value="Flip"/>
+    			</form>
+    		</li>
     	{% endfor %}
     	</ul>
     {% endfor %}
