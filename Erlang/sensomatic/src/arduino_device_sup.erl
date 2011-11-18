@@ -70,11 +70,9 @@ start_device( Id ) ->
 %% @doc Get the pid for a device by ID
 %%==============================================================================
 get_device( Id ) ->
-	case proplists:lookup( Id, sensomatic:devices() ) of
-		{ Id, Pid, _, _ } -> 
-			{ Id, Pid };
-		Other -> 
-			Other
+	case proplists:lookup( Id, supervisor:which_children( ?MODULE ) ) of
+		{ _, Pid, _, _ } -> Pid;
+		_ -> unknown
 	end.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

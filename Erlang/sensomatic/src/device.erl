@@ -6,7 +6,8 @@
 	add_port/2,
 	get_ports/1,
 	commit/1,
-	add_handler/3
+	add_handler/3,
+	get_port/2
 ] ).
 
 -behaviour( gen_server ).
@@ -49,6 +50,12 @@ add_port( Pid, PortSpec ) ->
 %%==============================================================================
 get_ports( Pid ) when is_pid( Pid ) ->
 	gen_server:call( Pid, ports ).
+	
+get_port( DevicePid, Id ) ->
+	case proplists:lookup( Id, get_ports( DevicePid ) ) of
+		{ _, PortPid, _ } -> PortPid;
+		_ -> unknown
+	end.
 
 %%==============================================================================
 %% commit/1
