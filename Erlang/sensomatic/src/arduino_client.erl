@@ -96,18 +96,18 @@ handle_info( { tcp, _Port, "DEVICE:" ++ Tail }, State ) ->
 	NewState = case arduino_device_sup:start_or_resume_device( Id ) of
 		
 		{ ok, DevicePid } -> 
-			device:add_handler( DevicePid, client_handler_device, [ self() ] ),
+			arduino_device:add_handler( DevicePid, client_handler_device, [ self() ] ),
 			State#state{ 
 				id = Id, 
 				device = DevicePid 
 			};
 			
 		{ resumed, DevicePid } -> 
-			device:add_handler( DevicePid, client_handler_device, [ self() ] ),
-			device:commit( DevicePid ),
+			arduino_device:add_handler( DevicePid, client_handler_device, [ self() ] ),
+			arduino_device:commit( DevicePid ),
 			Ports = lists:map( fun( { PortId, PortPid, _ } ) ->
 				{ PortId, PortPid }
-			end, device:get_ports( DevicePid ) ),
+			end, arduino_device:get_ports( DevicePid ) ),
 			State#state{ 
 				id = Id, 
 				device = DevicePid, 
@@ -130,7 +130,7 @@ handle_info( { tcp, _, "PORTS:" ++ Tail }, State ) ->
 			{ Id, input, analog } -> { State#state.device, Id, ro, { scale, { 0, 1024 }, 0 } };
 			{ Id, output, analog } -> { State#state.device, Id, rw, { scale, { 0, 1024 }, 0 } }
 		end,
-		{ ok, Pid } = device:add_port( State#state.device, PortSpec ),
+		{ ok, Pid } = arduino_device:add_port( State#state.device, PortSpec ),
 		{ Id, Pid }
 	end, parse_ports( Tail ) ),
 	{ noreply, State#state{ ports = Ports } };

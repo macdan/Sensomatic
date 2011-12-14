@@ -18,14 +18,11 @@ init( [ Client ] ) ->
 	} }.
  
 handle_event( { commit, Device }, State ) ->
-	Values = lists:map( fun( { _, _, Value } ) ->
-		case Value of
-			0 -> "0";
-			1 -> "1"
-		end
-	end, device:get_ports( Device ) ),
+	Values = lists:map( fun( { _, _, Value } ) -> 
+		erlang:integer_to_list( Value ) 
+	end, arduino_device:get_ports( Device ) ),
 	Line = "VALUES: " ++ string:join( Values, "," ) ++ "\r\n",
-	client:send( State#state.client, Line ),
+	arduino_client:send( State#state.client, Line ),
 	{ ok, State }.
  
 handle_call( _, State ) ->

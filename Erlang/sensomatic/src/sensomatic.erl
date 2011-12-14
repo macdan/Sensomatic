@@ -5,7 +5,8 @@
 	zones/0, 
 	add_zone/1,
 	remove_zone/1,
-	devices/0 
+	devices/0,
+	ports/0
 ] ).
 
 -behaviour( application ).
@@ -59,6 +60,18 @@ devices() ->
 	lists:map( fun( { Id, Pid, _, _ } ) ->
 		{ Id, Pid }
 	end, supervisor:which_children( arduino_device_sup ) ).
+
+%%==============================================================================
+%% ports/0
+%%
+%% @doc Get a list of all ports from all devices
+%%==============================================================================
+ports() ->
+	lists:flatten( lists:map( fun( { DeviceId, DevicePid } ) ->
+		lists:map( fun( { PortId, PortPid, _ } ) ->
+			{ { DeviceId, DevicePid }, { PortId, PortPid } }
+		end, arduino_device:get_ports( DevicePid ) )
+	end, devices() ) ).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% application callbacks

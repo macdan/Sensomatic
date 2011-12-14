@@ -51,7 +51,7 @@ start_or_resume_device( Id ) ->
 start_device( { Id, PortSpecs } ) ->
 	{ ok, Pid } = start_device( Id ),
 	lists:foreach( fun( PortSpec ) ->
-		device:add_port( Pid, PortSpec )
+		arduino_device:add_port( Pid, PortSpec )
 	end, PortSpecs ),
 	{ ok, Pid };
 start_device( Id ) ->

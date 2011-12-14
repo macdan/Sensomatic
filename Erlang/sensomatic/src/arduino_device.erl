@@ -1,4 +1,4 @@
--module( device ).
+-module( arduino_device ).
 
 -export( [ 
 	start_link/0,
