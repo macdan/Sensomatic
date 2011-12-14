@@ -56,10 +56,13 @@ which_children() ->
 %%==============================================================================
 %% start_worker/1
 %%==============================================================================
+start_worker( { Id, gen_event } ) ->
+	start_worker( { Id, { gen_event, start_link, [] } } );
 start_worker( Mfa = { Mod, _, _ } ) ->
 	start_worker( { Mod, Mfa } );
 start_worker( { Id, Mfa = { Mod, _, _ } } ) ->
-	ChildSpec = { Id, Mfa, temporary, 1000, supervisor, [ Mod ] },
+	ChildSpec = { Id, Mfa, temporary, 1000, worker, [ Mod ] },
+	util:shout( "Starting worker: ~p", [ ChildSpec ] ),
 	supervisor:start_child( ?MODULE, ChildSpec ).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
