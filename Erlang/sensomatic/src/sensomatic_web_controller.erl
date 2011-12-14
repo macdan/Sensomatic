@@ -61,8 +61,7 @@ devices( 'GET', Req, _ ) ->
 	end, sensomatic:devices() ),
 	
 	{ ok, Html } = devices_dtl:render( [
-		{ devices, Devices },
-		{ port_select, helper:html_port_select( all ) }
+		{ devices, Devices }
 	] ),
 
 	Req:respond( { 200, [

@@ -7,20 +7,18 @@
   <body>
     <h1>Devices</h1>
     
-    <hr/>
-    {{port_select}}
-    <hr/>
-    
     {% for device in devices %}
     	<h2>{{ device.pid }} {{ device.id }}</h2>
     	<ul>
     	{% for port in device.ports %}
     		<li>
     			<span>{{port.pid}} {{ port.id }}: {{ port.value }}</span>
+    			{% if port.rw == "rw" %}
     			<form method="post">
     				<input type="hidden" name="port" value="{{device.id}}-{{port.id}}"/>
     				<input type="submit" name="submit" value="Flip"/>
     			</form>
+    			{% endif %}
     		</li>
     	{% endfor %}
     	</ul>
