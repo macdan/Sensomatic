@@ -93,9 +93,6 @@ handle_cast( _, State ) ->
 handle_info( { tcp, _Port, "DEVICE:" ++ Tail }, State ) ->
 	[ Id, _ ] = string:tokens( Tail, " \r\n" ),
 	
-	%DeviceModule = list_to_atom( "arduino_" ++ Type ),
-	%util:shout( "Considering spawning a ~p", [ DeviceModule ] ),
-	
 	NewState = case arduino_device_sup:start_or_resume_device( Id ) of
 		
 		{ ok, DevicePid } -> 
