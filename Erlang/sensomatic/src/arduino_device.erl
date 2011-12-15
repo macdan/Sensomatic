@@ -59,8 +59,8 @@ get_ports( Pid ) when is_pid( Pid ) ->
 %%==============================================================================
 get_port( DevicePid, Id ) ->
 	case proplists:lookup( Id, get_ports( DevicePid ) ) of
-		{ _, PortPid, _ } -> PortPid;
-		_ -> unknown
+		none -> throw( unknown_port );
+		{ _, PortPid, _ } -> PortPid
 	end.
 
 %%==============================================================================
@@ -123,7 +123,7 @@ handle_call( { add_port, PortSpec }, _, State ) ->
 %%------------------------------------------------------------------------------
 handle_call( ports, _From, State ) ->
 	Ports = lists:map( fun( { Id, Pid, _, _ } ) ->
-		{ Id, Pid, port:get_value( Pid ) }
+		{ Id, Pid, arduino_port:get_value( Pid ) }
 	end, lists:reverse( supervisor:which_children( State#state.port_sup ) ) ),
 	{ reply, Ports, State };
 %%------------------------------------------------------------------------------

@@ -1,9 +1,12 @@
--module( port ).
+-module( arduino_port ).
 
 -export( [ 
 	start_link/1,
 	set_value/2, 
-	get_value/1
+	get_value/1,
+	add_handler/3,
+	get_spec/1,
+	commit/1
 ] ).
 
 -behaviour( gen_server ).
@@ -47,6 +50,18 @@ set_value( Pid, Value ) ->
 get_value( Pid ) -> 
 	gen_server:call( Pid, get_value ).
 
+get_spec( Pid ) ->
+	gen_server:call( Pid, get_spec ).
+
+%%==============================================================================
+%% add_handler/3
+%%==============================================================================
+add_handler( Pid, Handler, Args ) ->
+	gen_server:call( Pid, { add_handler, Handler, Args } ).
+	
+commit( Pid ) ->
+	gen_server:cast( Pid, commit ).
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% gen_server callbacks
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -71,7 +86,7 @@ init( [ { DevicePid, Id, Rw, Type } ] ) ->
 %% Commit
 %%------------------------------------------------------------------------------
 handle_cast( commit, State ) ->
-	gen_server:cast( State#state.device, commit ),
+	device:commit( State#state.device ),
 	{ noreply, State };
 %%------------------------------------------------------------------------------
 %% Catch All
@@ -90,6 +105,11 @@ handle_info( Msg, State ) ->
 %%==============================================================================
 %% handle_call/2
 %%==============================================================================
+%% Get Spec
+%%------------------------------------------------------------------------------
+handle_call( get_spec, _, State ) ->
+	{ reply, { State#state.device, State#state.id, State#state.rw, State#state.type }, State };
+%%------------------------------------------------------------------------------
 %% Get Value
 %%------------------------------------------------------------------------------
 handle_call( get_value, _From, State ) ->
@@ -97,17 +117,22 @@ handle_call( get_value, _From, State ) ->
 %%------------------------------------------------------------------------------
 %% Set Value
 %%------------------------------------------------------------------------------
-handle_call( { set_value, Value }, _From, State ) ->
+handle_call( { set_value, Value }, _From, State ) when is_integer( Value ) ->
 	if
 		Value =/= State#state.value ->
 			gen_event:notify( State#state.event, { value_changed, self(), Value } );
-		
 		Value =:= State#state.value ->
 			ok
-	
 	end,
-	NewState = State#state{ value = Value },
-	{ reply, ok, NewState };
+	{ reply, ok, State#state{ value = Value } };
+
+%%------------------------------------------------------------------------------
+%% Add Handler 
+%%------------------------------------------------------------------------------
+handle_call( { add_handler, Handler, Args }, _, State ) ->
+	{ reply,
+		gen_event:add_handler( State#state.event, Handler, Args ),
+	State };
 %%------------------------------------------------------------------------------
 %% Catch All
 %%------------------------------------------------------------------------------

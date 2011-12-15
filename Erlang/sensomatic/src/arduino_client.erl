@@ -145,7 +145,7 @@ handle_info( { tcp, _Port, "DONE" ++ _ }, State ) ->
 handle_info( { tcp, _Port, "VALUES:" ++ Csv }, State ) ->
 	Data = lists:map( fun parse_value/1, string:tokens( Csv, " ,\r\n" ) ),
 	lists:foreach( fun( { { _, Port }, Value } ) ->
-		port:set_value( Port, Value )
+		arduino_port:set_value( Port, Value )
 	end, lists:zip( State#state.ports, Data ) ),
 	{ noreply, State };
 %%------------------------------------------------------------------------------
