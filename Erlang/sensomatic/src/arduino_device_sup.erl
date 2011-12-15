@@ -6,6 +6,7 @@
 	start_worker/1,
 	start_or_resume_device/1,
 	start_device/1,
+	get_devices/0,
 	get_device/1
 ] ).
 -export( [ init/1 ] ).
@@ -63,6 +64,16 @@ start_device( Id ) ->
 		worker,
 		[ device ]
 	} ).
+	
+%%==============================================================================
+%% get_devices/0
+%%
+%% @doc Get all devices as a property list { Id, Pid }
+%%==============================================================================
+get_devices() ->
+	lists:map( fun( { Id, Pid, _, _ } ) ->
+		{ Id, Pid }
+	end, supervisor:which_children( ?MODULE ) ).
 
 %%==============================================================================
 %% get_device/1
@@ -70,9 +81,9 @@ start_device( Id ) ->
 %% @doc Get the pid for a device by ID
 %%==============================================================================
 get_device( Id ) ->
-	case proplists:lookup( Id, supervisor:which_children( ?MODULE ) ) of
-		{ _, Pid, _, _ } -> Pid;
-		_ -> unknown
+	case proplists:lookup( Id, get_devices() ) of
+		{ Id, Pid } -> Pid;
+		_ -> throw( unknown_device )
 	end.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
